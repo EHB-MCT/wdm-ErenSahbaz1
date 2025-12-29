@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
 		};
 
 		// Store the violation
-		storage.addViolation(violation);
+		await storage.addViolation(violation);
 
 		return NextResponse.json({
 			success: true,
@@ -58,12 +58,12 @@ export async function GET(request: NextRequest) {
 
 		if (userId) {
 			// Get violations for specific user
-			const violations = storage.getUserViolations(userId);
+			const violations = await storage.getUserViolations(userId);
 			return NextResponse.json({ violations });
 		}
 
 		// Get all violations (admin use)
-		const allViolations = storage.getAllViolations();
+		const allViolations = await storage.getAllViolations();
 		return NextResponse.json({ violations: allViolations });
 	} catch (error) {
 		console.error("Error fetching violations:", error);

@@ -1,51 +1,140 @@
-// In-memory storage for now - will be replaced with a real database later
-import { LocationPoint, SpeedViolation, UserRoute } from "@/types/location";
+// Database storage using Mongoose
+import { connectDB } from "@/lib/mongodb";
+import { Location, Violation, ILocation, IViolation } from "@/lib/models";
+import { LocationPoint, SpeedViolation } from "@/types/location";
+import { Types } from "mongoose";
 
 class DataStorage {
-	private locations: LocationPoint[] = [];
-	private violations: SpeedViolation[] = [];
-	private routes: UserRoute[] = [];
-
 	// Add a location point
-	addLocation(location: LocationPoint): void {
-		this.locations.push(location);
+	async addLocation(location: LocationPoint): Promise<void> {
+		await connectDB();
+		await Location.create({
+			userId: location.userId,
+			latitude: location.latitude,
+			longitude: location.longitude,
+			timestamp: new Date(location.timestamp),
+			speed: location.speed,
+			accuracy: location.accuracy,
+			heading: location.heading,
+		});
 	}
 
 	// Get all locations for a user
-	getUserLocations(userId: string): LocationPoint[] {
-		return this.locations.filter((loc) => loc.userId === userId);
+	async getUserLocations(userId: string): Promise<LocationPoint[]> {
+		await connectDB();
+		const locations = await Location.find({ userId })
+			.sort({ timestamp: 1 })
+			.lean<Array<ILocation & { _id: Types.ObjectId }>>();
+
+		return locations.map((loc) => ({
+			id: loc._id.toString(),
+			userId: loc.userId,
+			latitude: loc.latitude,
+			longitude: loc.longitude,
+			timestamp: loc.timestamp.getTime(),
+			speed: loc.speed ?? undefined,
+			accuracy: loc.accuracy ?? undefined,
+			heading: loc.heading ?? undefined,
+		}));
 	}
 
 	// Get all locations (admin use)
-	getAllLocations(): LocationPoint[] {
-		return this.locations;
+	async getAllLocations(): Promise<LocationPoint[]> {
+		await connectDB();
+		const locations = await Location.find()
+			.sort({ timestamp: -1 })
+			.limit(1000)
+			.lean<Array<ILocation & { _id: Types.ObjectId }>>();
+
+		return locations.map((loc) => ({
+			id: loc._id.toString(),
+			userId: loc.userId,
+			latitude: loc.latitude,
+			longitude: loc.longitude,
+			timestamp: loc.timestamp.getTime(),
+			speed: loc.speed ?? undefined,
+			accuracy: loc.accuracy ?? undefined,
+			heading: loc.heading ?? undefined,
+		}));
 	}
 
 	// Add a speed violation
-	addViolation(violation: SpeedViolation): void {
-		this.violations.push(violation);
+	async addViolation(violation: SpeedViolation): Promise<void> {
+		await connectDB();
+		await Violation.create({
+			userId: violation.userId,
+			latitude: violation.latitude,
+			longitude: violation.longitude,
+			timestamp: new Date(violation.timestamp),
+			actualSpeed: violation.actualSpeed,
+			speedLimit: violation.speedLimit,
+			excess: violation.excess,
+		});
 	}
 
 	// Get violations for a user
-	getUserViolations(userId: string): SpeedViolation[] {
-		return this.violations.filter((v) => v.userId === userId);
+	async getUserViolations(userId: string): Promise<SpeedViolation[]> {
+		await connectDB();
+		const violations = await Violation.find({ userId })
+			.sort({ timestamp: -1 })
+			.lean<Array<IViolation & { _id: Types.ObjectId }>>();
+
+		return violations.map((v) => ({
+			id: v._id.toString(),
+			userId: v.userId,
+			latitude: v.latitude,
+			longitude: v.longitude,
+			timestamp: v.timestamp.getTime(),
+			actualSpeed: v.actualSpeed,
+			speedLimit: v.speedLimit,
+			excess: v.excess,
+		}));
 	}
 
 	// Get all violations (admin use)
-	getAllViolations(): SpeedViolation[] {
-		return this.violations;
+	async getAllViolations(): Promise<SpeedViolation[]> {
+		await connectDB();
+		const violations = await Violation.find()
+			.sort({ timestamp: -1 })
+			.lean<Array<IViolation & { _id: Types.ObjectId }>>();
+
+		return violations.map((v) => ({
+			id: v._id.toString(),
+			userId: v.userId,
+			latitude: v.latitude,
+			longitude: v.longitude,
+			timestamp: v.timestamp.getTime(),
+			actualSpeed: v.actualSpeed,
+			speedLimit: v.speedLimit,
+			excess: v.excess,
+		}));
 	}
 
 	// Get recent locations (last N locations)
-	getRecentLocations(limit: number = 100): LocationPoint[] {
-		return this.locations
-			.sort((a, b) => b.timestamp - a.timestamp)
-			.slice(0, limit);
+	async getRecentLocations(limit: number = 100): Promise<LocationPoint[]> {
+		await connectDB();
+		const locations = await Location.find()
+			.sort({ timestamp: -1 })
+			.limit(limit)
+			.lean<Array<ILocation & { _id: Types.ObjectId }>>();
+
+		return locations.map((loc) => ({
+			id: loc._id.toString(),
+			userId: loc.userId,
+			latitude: loc.latitude,
+			longitude: loc.longitude,
+			timestamp: loc.timestamp.getTime(),
+			speed: loc.speed ?? undefined,
+			accuracy: loc.accuracy ?? undefined,
+			heading: loc.heading ?? undefined,
+		}));
 	}
 
 	// Get unique users
-	getUniqueUsers(): string[] {
-		return [...new Set(this.locations.map((loc) => loc.userId))];
+	async getUniqueUsers(): Promise<string[]> {
+		await connectDB();
+		const users = await Location.distinct("userId");
+		return users;
 	}
 }
 

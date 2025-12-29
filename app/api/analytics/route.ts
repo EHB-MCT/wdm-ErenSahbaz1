@@ -14,13 +14,15 @@ export async function GET(request: NextRequest) {
 
 		if (!userId) {
 			// Get analytics for all users
-			const users = storage.getUniqueUsers();
-			const analytics = users.map((uid) => getUserAnalytics(uid));
+			const users = await storage.getUniqueUsers();
+			const analytics = await Promise.all(
+				users.map((uid) => getUserAnalytics(uid))
+			);
 			return NextResponse.json({ analytics });
 		}
 
 		// Get analytics for specific user
-		const userAnalytics = getUserAnalytics(userId);
+		const userAnalytics = await getUserAnalytics(userId);
 		return NextResponse.json(userAnalytics);
 	} catch (error) {
 		console.error("Error generating analytics:", error);
@@ -31,9 +33,9 @@ export async function GET(request: NextRequest) {
 	}
 }
 
-function getUserAnalytics(userId: string) {
-	const locations = storage.getUserLocations(userId);
-	const violations = storage.getUserViolations(userId);
+async function getUserAnalytics(userId: string) {
+	const locations = await storage.getUserLocations(userId);
+	const violations = await storage.getUserViolations(userId);
 
 	// Calculate total distance
 	let totalDistance = 0;

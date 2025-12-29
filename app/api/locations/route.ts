@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
 		};
 
 		// Store the location
-		storage.addLocation(locationPoint);
+		await storage.addLocation(locationPoint);
 
 		return NextResponse.json({
 			success: true,
@@ -52,12 +52,12 @@ export async function GET(request: NextRequest) {
 
 		if (userId) {
 			// Get locations for specific user
-			const locations = storage.getUserLocations(userId);
+			const locations = await storage.getUserLocations(userId);
 			return NextResponse.json({ locations });
 		}
 
 		// Get recent locations for all users (limit to prevent huge response)
-		const recentLocations = storage.getRecentLocations(100);
+		const recentLocations = await storage.getRecentLocations(100);
 		return NextResponse.json({ locations: recentLocations });
 	} catch (error) {
 		console.error("Error fetching locations:", error);
