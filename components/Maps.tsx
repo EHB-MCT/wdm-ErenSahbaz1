@@ -1,12 +1,8 @@
 "use client";
 
 import React, { useEffect, useState, useRef } from "react";
-import {
-	LoadScript,
-	GoogleMap,
-	Marker,
-	Polyline,
-} from "@react-google-maps/api";
+import { GoogleMap, Marker, Polyline } from "@react-google-maps/api";
+import { useGoogleMaps } from "./GoogleMapsProvider";
 import { getUserId, calculateSpeed } from "@/lib/utils";
 import { LocationPoint } from "@/types/location";
 
@@ -24,6 +20,7 @@ const defaultCenter = {
 const DEFAULT_SPEED_LIMIT = 70;
 
 export default function Maps() {
+	const { isLoaded, loadError } = useGoogleMaps();
 	const [userLocation, setUserLocation] = useState<{
 		lat: number;
 		lng: number;
@@ -221,20 +218,28 @@ export default function Maps() {
 				)}
 			</div>
 
-			{/* LoadScript loads all the Google Maps code from Google's servers */}
-			<LoadScript googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API!}>
-				{/* This creates the actual map on the screen */}
+			{loadError && (
+				<div className="h-[600px] flex items-center justify-center bg-gray-100">
+					<p className="text-red-600">Error loading maps</p>
+				</div>
+			)}
+
+			{!isLoaded && !loadError && (
+				<div className="h-[600px] flex items-center justify-center bg-gray-100">
+					<p className="text-gray-600">Loading map...</p>
+				</div>
+			)}
+
+			{isLoaded && (
 				<GoogleMap
 					mapContainerStyle={containerStyle}
 					center={mapCenter}
 					zoom={userLocation ? 15 : 10}
 				>
-					{/* Only show a marker (red pin) if we found the user's location */}
 					{userLocation && (
 						<Marker position={userLocation} title="Your Location" />
 					)}
 
-					{/* Draw the path the user has traveled */}
 					{locationHistory.length > 1 && (
 						<Polyline
 							path={locationHistory.map((loc) => ({
@@ -249,7 +254,7 @@ export default function Maps() {
 						/>
 					)}
 				</GoogleMap>
-			</LoadScript>
+			)}
 		</div>
 	);
 }

@@ -1,12 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-	LoadScript,
-	GoogleMap,
-	Marker,
-	InfoWindow,
-} from "@react-google-maps/api";
+import { GoogleMap, Marker, InfoWindow } from "@react-google-maps/api";
+import { useGoogleMaps } from "@/components/GoogleMapsProvider";
 import { LocationPoint, SpeedViolation } from "@/types/location";
 
 const containerStyle = {
@@ -33,18 +29,35 @@ interface UserAnalytics {
 	}>;
 }
 
+interface Trip {
+	id: string;
+	userId: string;
+	startTime: string;
+	endTime?: string;
+	startLocation: { latitude: number; longitude: number };
+	endLocation?: { latitude: number; longitude: number };
+	totalDistance: number;
+	averageSpeed: number;
+	maxSpeed: number;
+	violationsCount: number;
+	isActive: boolean;
+	duration: number | null;
+}
+
 export default function AdminDashboard() {
+	const { isLoaded, loadError } = useGoogleMaps();
 	const [allLocations, setAllLocations] = useState<LocationPoint[]>([]);
 	const [allViolations, setAllViolations] = useState<SpeedViolation[]>([]);
 	const [analytics, setAnalytics] = useState<UserAnalytics[]>([]);
+	const [allTrips, setAllTrips] = useState<Trip[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [selectedUser, setSelectedUser] = useState<string | null>(null);
 	const [selectedMarker, setSelectedMarker] = useState<LocationPoint | null>(
 		null
 	);
-	const [view, setView] = useState<"map" | "analytics" | "violations">(
-		"analytics"
-	);
+	const [view, setView] = useState<
+		"map" | "analytics" | "violations" | "trips"
+	>("trips");
 
 	useEffect(() => {
 		loadData();
@@ -56,19 +69,23 @@ export default function AdminDashboard() {
 	const loadData = async () => {
 		try {
 			// Load all data in parallel
-			const [locationsRes, violationsRes, analyticsRes] = await Promise.all([
-				fetch("/api/locations"),
-				fetch("/api/violations"),
-				fetch("/api/analytics"),
-			]);
+			const [locationsRes, violationsRes, analyticsRes, tripsRes] =
+				await Promise.all([
+					fetch("/api/locations"),
+					fetch("/api/violations"),
+					fetch("/api/analytics"),
+					fetch("/api/trips"),
+				]);
 
 			const locationsData = await locationsRes.json();
 			const violationsData = await violationsRes.json();
 			const analyticsData = await analyticsRes.json();
+			const tripsData = await tripsRes.json();
 
 			setAllLocations(locationsData.locations || []);
 			setAllViolations(violationsData.violations || []);
 			setAnalytics(analyticsData.analytics || []);
+			setAllTrips(tripsData.trips || []);
 			setLoading(false);
 		} catch (error) {
 			console.error("Failed to load admin data:", error);
@@ -113,6 +130,16 @@ export default function AdminDashboard() {
 			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
 				<div className="flex space-x-4 mb-6">
 					<button
+						onClick={() => setView("trips")}
+						className={`px-4 py-2 rounded-md font-medium ${
+							view === "trips"
+								? "bg-blue-600 text-white"
+								: "bg-white text-gray-700 hover:bg-gray-100"
+						}`}
+					>
+						Trips ({allTrips.length})
+					</button>
+					<button
 						onClick={() => setView("analytics")}
 						className={`px-4 py-2 rounded-md font-medium ${
 							view === "analytics"
@@ -143,6 +170,106 @@ export default function AdminDashboard() {
 						Violations ({allViolations.length})
 					</button>
 				</div>
+
+				{/* Trips View */}
+				{view === "trips" && (
+					<div className="bg-white rounded-lg shadow overflow-hidden">
+						<div className="px-6 py-4 border-b">
+							<h2 className="text-lg font-semibold">All Trips</h2>
+							<p className="text-sm text-gray-600">
+								{allTrips.filter((t) => t.isActive).length} active trips
+							</p>
+						</div>
+						<div className="overflow-x-auto">
+							<table className="min-w-full divide-y divide-gray-200">
+								<thead className="bg-gray-50">
+									<tr>
+										<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+											Status
+										</th>
+										<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+											User ID
+										</th>
+										<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+											Start Time
+										</th>
+										<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+											Duration
+										</th>
+										<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+											Distance
+										</th>
+										<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+											Avg Speed
+										</th>
+										<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+											Max Speed
+										</th>
+										<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+											Violations
+										</th>
+									</tr>
+								</thead>
+								<tbody className="bg-white divide-y divide-gray-200">
+									{allTrips.map((trip) => (
+										<tr key={trip.id} className="hover:bg-gray-50">
+											<td className="px-6 py-4 whitespace-nowrap">
+												{trip.isActive ? (
+													<span className="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+														Active
+													</span>
+												) : (
+													<span className="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
+														Completed
+													</span>
+												)}
+											</td>
+											<td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+												{trip.userId}
+											</td>
+											<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+												{new Date(trip.startTime).toLocaleString()}
+											</td>
+											<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+												{trip.duration
+													? `${Math.round(trip.duration)} min`
+													: "In progress"}
+											</td>
+											<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+												{trip.totalDistance.toFixed(2)} km
+											</td>
+											<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+												{trip.averageSpeed.toFixed(1)} km/h
+											</td>
+											<td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+												{trip.maxSpeed.toFixed(1)} km/h
+											</td>
+											<td className="px-6 py-4 whitespace-nowrap text-sm">
+												{trip.violationsCount > 0 ? (
+													<span className="text-red-600 font-semibold">
+														{trip.violationsCount}
+													</span>
+												) : (
+													<span className="text-green-600">0</span>
+												)}
+											</td>
+										</tr>
+									))}
+									{allTrips.length === 0 && (
+										<tr>
+											<td
+												colSpan={8}
+												className="px-6 py-4 text-center text-sm text-gray-500"
+											>
+												No trips recorded yet
+											</td>
+										</tr>
+									)}
+								</tbody>
+							</table>
+						</div>
+					</div>
+				)}
 
 				{/* Analytics View */}
 				{view === "analytics" && (
@@ -251,9 +378,17 @@ export default function AdminDashboard() {
 								Showing {filteredLocations.length} locations
 							</p>
 						</div>
-						<LoadScript
-							googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API!}
-						>
+						{loadError && (
+							<div className="h-[600px] flex items-center justify-center bg-gray-100">
+								<p className="text-red-600">Error loading maps</p>
+							</div>
+						)}
+						{!isLoaded && !loadError && (
+							<div className="h-[600px] flex items-center justify-center bg-gray-100">
+								<p className="text-gray-600">Loading map...</p>
+							</div>
+						)}
+						{isLoaded && (
 							<GoogleMap
 								mapContainerStyle={containerStyle}
 								center={
@@ -298,7 +433,7 @@ export default function AdminDashboard() {
 									</InfoWindow>
 								)}
 							</GoogleMap>
-						</LoadScript>
+						)}
 					</div>
 				)}
 

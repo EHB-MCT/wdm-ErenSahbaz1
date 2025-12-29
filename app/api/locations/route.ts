@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { storage } from "@/lib/storage";
 import { LocationPoint } from "@/types/location";
+import { detectAndManageTrip } from "@/lib/tripDetection";
 
 export async function POST(request: NextRequest) {
 	try {
@@ -17,16 +18,27 @@ export async function POST(request: NextRequest) {
 			);
 		}
 
+		const timestamp = Date.now();
+
+		// Detect or manage trip
+		const tripId = await detectAndManageTrip(userId, {
+			latitude,
+			longitude,
+			timestamp: new Date(timestamp),
+			speed,
+		});
+
 		// Create location point
 		const locationPoint: LocationPoint = {
 			id: `loc_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
 			userId,
 			latitude,
 			longitude,
-			timestamp: Date.now(),
+			timestamp,
 			speed,
 			accuracy,
 			heading,
+			tripId: tripId || undefined,
 		};
 
 		// Store the location
@@ -35,6 +47,7 @@ export async function POST(request: NextRequest) {
 		return NextResponse.json({
 			success: true,
 			location: locationPoint,
+			tripId,
 		});
 	} catch (error) {
 		console.error("Error storing location:", error);
