@@ -348,7 +348,10 @@ export default function ChartsPage() {
 										cy="50%"
 										labelLine={false}
 										label={(entry) => {
-											const data = entry as unknown as { range: string; count: number };
+											const data = entry as unknown as {
+												range: string;
+												count: number;
+											};
 											return data.count > 0
 												? `${data.range}: ${data.count}`
 												: "";
