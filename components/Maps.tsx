@@ -1,85 +1,330 @@
 "use client";
 
-
-import React, { useEffect, useState } from "react"; 
-import { LoadScript, GoogleMap, Marker } from "@react-google-maps/api"; 
-
+import React, { useEffect, useState, useRef } from "react";
+import { useSession } from "next-auth/react";
+import { GoogleMap, Marker, Polyline } from "@react-google-maps/api";
+import { useGoogleMaps } from "./GoogleMapsProvider";
+import { calculateSpeed } from "@/lib/utils";
+import { LocationPoint } from "@/types/location";
 
 const containerStyle = {
-	width: "100%", 
-	height: "600px", 
+	width: "100%",
+	height: "600px",
 };
 
+// Default to Brussels, Belgium
 const defaultCenter = {
-	lat: 40.7128, 
-	lng: -74.006, 
+	lat: 50.8503,
+	lng: 4.3517,
 };
+
+// Speed limit for testing (km/h) - in real app, this would come from road data
+const DEFAULT_SPEED_LIMIT = 70;
 
 export default function Maps() {
+	const { isLoaded, loadError } = useGoogleMaps();
+	const { data: session } = useSession();
 	const [userLocation, setUserLocation] = useState<{
-		lat: number; 
-		lng: number; 
-	} | null>(null); 
+		lat: number;
+		lng: number;
+	} | null>(null);
 
-	const [loading, setLoading] = useState(true); 
-	const [error, setError] = useState<string | null>(null); 
-    const [isTracking, setIsTracking] = useState(false)
+	const [loading, setLoading] = useState(true);
+	const [error, setError] = useState<string | null>(null);
+	const [currentSpeed, setCurrentSpeed] = useState<number>(0);
+	const [isTracking, setIsTracking] = useState(true);
+	const [locationHistory, setLocationHistory] = useState<LocationPoint[]>([]);
+	const [usingDefaultLocation, setUsingDefaultLocation] = useState(false);
 
-	
-	useEffect(() => {
-		// Check if the browser can find locations (like a GPS)
-		if (navigator.geolocation) {
-			navigator.geolocation.getCurrentPosition(
-				
-				(position) => {
-					setUserLocation({
-						lat: position.coords.latitude, 
-						lng: position.coords.longitude, 
-					});
-					setLoading(false); 
+	const watchIdRef = useRef<number | null>(null);
+	const lastLocationRef = useRef<LocationPoint | null>(null);
+
+	const userId = session?.user?.id;
+
+	// Use default location when geolocation fails
+	const useDefaultLocation = () => {
+		setUserLocation(defaultCenter);
+		setUsingDefaultLocation(true);
+		setError(null);
+		setLoading(false);
+		setIsTracking(false);
+	};
+
+	// Function to send location to server
+	const sendLocationToServer = async (location: LocationPoint) => {
+		try {
+			await fetch("/api/locations", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
 				},
-				
+				body: JSON.stringify({
+					userId: location.userId,
+					latitude: location.latitude,
+					longitude: location.longitude,
+					speed: location.speed,
+					accuracy: location.accuracy,
+					heading: location.heading,
+				}),
+			});
+		} catch (error) {
+			console.error("Failed to send location to server:", error);
+		}
+	};
+
+	// Function to check speed violations
+	const checkSpeedViolation = async (
+		speed: number,
+		location: LocationPoint
+	) => {
+		if (speed > DEFAULT_SPEED_LIMIT) {
+			try {
+				await fetch("/api/violations", {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					body: JSON.stringify({
+						userId: location.userId,
+						latitude: location.latitude,
+						longitude: location.longitude,
+						actualSpeed: speed,
+						speedLimit: DEFAULT_SPEED_LIMIT,
+					}),
+				});
+				console.warn(
+					`Speed violation detected: ${speed.toFixed(
+						1
+					)} km/h in ${DEFAULT_SPEED_LIMIT} km/h zone`
+				);
+			} catch (error) {
+				console.error("Failed to report violation:", error);
+			}
+		}
+	};
+
+	// Start continuous location tracking
+	useEffect(() => {
+		if (!navigator.geolocation) {
+			setError("Geolocation is not supported by this browser");
+			setLoading(false);
+			return;
+		}
+
+		// Wait for user ID to be fetched
+		if (!userId) {
+			return;
+		}
+
+		if (isTracking) {
+			// Watch position continuously
+			watchIdRef.current = navigator.geolocation.watchPosition(
+				(position) => {
+					const newLocation: LocationPoint = {
+						id: `loc_${Date.now()}_${Math.random()
+							.toString(36)
+							.substring(2, 9)}`,
+						userId: userId,
+						latitude: position.coords.latitude,
+						longitude: position.coords.longitude,
+						timestamp: Date.now(),
+						speed: position.coords.speed
+							? position.coords.speed * 3.6
+							: undefined, // Convert m/s to km/h
+						accuracy: position.coords.accuracy,
+						heading: position.coords.heading || undefined,
+					};
+
+					// Update map position
+					setUserLocation({
+						lat: newLocation.latitude,
+						lng: newLocation.longitude,
+					});
+
+					// Calculate speed if we have a previous location
+					if (lastLocationRef.current) {
+						const calculatedSpeed = calculateSpeed(
+							lastLocationRef.current,
+							newLocation
+						);
+
+						// Use GPS speed if available, otherwise use calculated speed
+						const speed = newLocation.speed || calculatedSpeed;
+						setCurrentSpeed(speed);
+						newLocation.speed = speed;
+
+						// Check for speed violations
+						checkSpeedViolation(speed, newLocation);
+					}
+
+					// Save location to history
+					setLocationHistory((prev) => [...prev.slice(-49), newLocation]); // Keep last 50 points
+
+					// Send to server
+					sendLocationToServer(newLocation);
+
+					// Update reference
+					lastLocationRef.current = newLocation;
+					setLoading(false);
+				},
 				(error) => {
 					console.error("Error getting location:", error);
-					setError("Unable to get your location"); 
-					setLoading(false); 
+					let errorMessage = "Unable to get your location";
+
+					switch (error.code) {
+						case error.PERMISSION_DENIED:
+							errorMessage =
+								"Location permission denied. Please allow location access in your browser settings.";
+							break;
+						case error.POSITION_UNAVAILABLE:
+							errorMessage =
+								"Location information is unavailable. Make sure location services are enabled.";
+							break;
+						case error.TIMEOUT:
+							errorMessage =
+								"Location request timed out. Retrying with lower accuracy...";
+							// Try again with lower accuracy settings
+							navigator.geolocation.getCurrentPosition(
+								(position) => {
+									setUserLocation({
+										lat: position.coords.latitude,
+										lng: position.coords.longitude,
+									});
+									setError(null);
+									setLoading(false);
+								},
+								() => {
+									setError(
+										"Could not get location. Please check your location settings."
+									);
+									setLoading(false);
+								},
+								{ enableHighAccuracy: false, timeout: 15000, maximumAge: 60000 }
+							);
+							return;
+					}
+
+					setError(errorMessage);
+					setLoading(false);
 				},
 				{
-					enableHighAccuracy: true, 
-					timeout: 10000, 
-					maximumAge: 60000, 
+					enableHighAccuracy: true,
+					timeout: 15000,
+					maximumAge: 5000, // Allow slightly cached location
 				}
 			);
-		} else {
-			
-			setError("Geolocation is not supported by this browser");
-			setLoading(false); 
 		}
-	}, []); 
 
-	
-	const mapCenter = userLocation || defaultCenter; 
+		// Cleanup function
+		return () => {
+			if (watchIdRef.current !== null) {
+				navigator.geolocation.clearWatch(watchIdRef.current);
+			}
+		};
+	}, [isTracking, userId]);
+
+	const mapCenter = userLocation || defaultCenter;
+
+	// Toggle tracking
+	const toggleTracking = () => {
+		setIsTracking(!isTracking);
+	};
 
 	return (
-		
-		<>
-			{/* LoadScript loads all the Google Maps code from Google's servers */}
-			<LoadScript googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API!}>
-				{/* This creates the actual map on the screen */}
+		<div className="relative w-full">
+			{/* Control Panel */}
+			<div className="absolute top-4 left-4 z-10 bg-white p-4 rounded-lg shadow-lg max-w-xs">
+				<h2 className="text-lg font-bold mb-2">Location Tracker</h2>
+
+				{loading && <p className="text-gray-600">Getting location...</p>}
+				{error && (
+					<div className="space-y-2">
+						<p className="text-red-600 text-sm">{error}</p>
+						<button
+							onClick={useDefaultLocation}
+							className="w-full px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
+						>
+							Use Default Location (Brussels)
+						</button>
+					</div>
+				)}
+
+				{usingDefaultLocation && (
+					<p className="text-yellow-600 text-sm mb-2">
+						Using default location (demo mode)
+					</p>
+				)}
+
+				{userLocation && (
+					<div className="space-y-2">
+						<p className="text-sm">
+							<strong>Lat:</strong> {userLocation.lat.toFixed(6)}
+						</p>
+						<p className="text-sm">
+							<strong>Lng:</strong> {userLocation.lng.toFixed(6)}
+						</p>
+						<p className="text-sm">
+							<strong>Speed:</strong> {currentSpeed.toFixed(1)} km/h
+						</p>
+						{currentSpeed > DEFAULT_SPEED_LIMIT && (
+							<p className="text-red-600 font-bold text-sm">
+								⚠️ Speed limit exceeded!
+							</p>
+						)}
+						<button
+							onClick={toggleTracking}
+							className={`w-full px-4 py-2 rounded text-white font-medium ${
+								isTracking
+									? "bg-red-500 hover:bg-red-600"
+									: "bg-green-500 hover:bg-green-600"
+							}`}
+						>
+							{isTracking ? "Stop Tracking" : "Start Tracking"}
+						</button>
+						<p className="text-xs text-gray-500">
+							Points recorded: {locationHistory.length}
+						</p>
+					</div>
+				)}
+			</div>
+
+			{loadError && (
+				<div className="h-[600px] flex items-center justify-center bg-gray-100">
+					<p className="text-red-600">Error loading maps</p>
+				</div>
+			)}
+
+			{!isLoaded && !loadError && (
+				<div className="h-[600px] flex items-center justify-center bg-gray-100">
+					<p className="text-gray-600">Loading map...</p>
+				</div>
+			)}
+
+			{isLoaded && (
 				<GoogleMap
-					mapContainerStyle={containerStyle} 
-					center={mapCenter} 
-					zoom={userLocation ? 15 : 10} 
+					mapContainerStyle={containerStyle}
+					center={mapCenter}
+					zoom={userLocation ? 15 : 10}
 				>
-					{/* Only show a marker (red pin) if we found the user's location */}
 					{userLocation && (
-						<Marker
-							position={userLocation} // Put the pin exactly where the user is
-							title="Your Location" // When they hover over the pin, show this text
+						<Marker position={userLocation} title="Your Location" />
+					)}
+
+					{locationHistory.length > 1 && (
+						<Polyline
+							path={locationHistory.map((loc) => ({
+								lat: loc.latitude,
+								lng: loc.longitude,
+							}))}
+							options={{
+								strokeColor: "#4285F4",
+								strokeOpacity: 0.8,
+								strokeWeight: 4,
+							}}
 						/>
 					)}
 				</GoogleMap>
-			</LoadScript>
-		</>
+			)}
+		</div>
 	);
 }
