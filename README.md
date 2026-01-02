@@ -1,112 +1,194 @@
-# Drive Analyser
+# 🚗 Drive Tracker - Weapon of Math Destruction
 
-example text
+A location tracking web application that demonstrates how data collection can be used to profile users and influence their experience. Built as part of the Dev5 course at Erasmushogeschool Brussel.
 
-[Live Demo](helloworld.com)
+## 📖 Project Overview
 
-## Features
+This project is a **"Weapon of Math Destruction"** - a system that collects user data, builds profiles, and uses that data to influence the user experience. It simulates how companies like insurance providers, ride-sharing apps, or fleet management systems could use driving data to profile and potentially discriminate against users.
 
-## Tech Stack
+### What It Does
 
-**Client:** 
+1. **Collects** - GPS location, speed, timestamps, driving patterns
+2. **Profiles** - Infers home/work locations, driving style, risk scores
+3. **Influences** - Changes UI based on user profile (personalized warnings, tips)
+4. **Administrates** - Dashboard for viewing and analyzing all user data
 
-**Server:** 
+## ✨ Features
 
-## Run Locally
+### User-Facing
 
-Clone the project
+- 📍 Real-time GPS tracking with Google Maps
+- 🚦 Dynamic speed limit estimation based on driving patterns
+- ⚠️ Speed violation detection and logging
+- 🎯 Personalized banner that changes based on your driving profile
+- 📊 Personal dashboard with trip history and statistics
+
+### Admin Dashboard
+
+- 👥 View all users and their data
+- 🗺️ Live map with all user locations
+- 📈 Data visualization with charts
+- 🔍 User profiling - inferred home/work locations
+- ⚡ Risk scoring and driving behavior analysis
+
+### Data Collection
+
+- Location coordinates (latitude, longitude)
+- Speed at each point
+- Timestamps
+- Trip detection (start/end)
+- Violation records
+- Device accuracy and heading
+
+## 🛠️ Tech Stack
+
+| Category             | Technology                 |
+| -------------------- | -------------------------- |
+| **Framework**        | Next.js 15 (App Router)    |
+| **Language**         | TypeScript                 |
+| **Database**         | MongoDB Atlas + Mongoose   |
+| **Authentication**   | NextAuth.js (Credentials)  |
+| **Maps**             | Google Maps JavaScript API |
+| **Styling**          | Tailwind CSS               |
+| **Charts**           | Recharts                   |
+| **Containerization** | Docker + Docker Compose    |
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js 20+
+- Docker & Docker Compose
+- Google Maps API key
+- MongoDB (local or Atlas)
+
+### Quick Start with Docker
 
 ```bash
-git clone https://github.com/EHB-MCT/cp-frontend-ErenSahbaz1
+# 1. Clone the repository
+git clone https://github.com/EHB-MCT/wdm-ErenSahbaz1.git
+cd wdm-ErenSahbaz1
+
+# 2. Create environment file
+cp .env.template .env
+# Edit .env with your values
+
+# 3. Run with Docker
+docker compose up --build
 ```
 
-Install dependencies
+### Local Development
 
 ```bash
-  npm install
+# 1. Install dependencies
+npm install
+
+# 2. Create environment file
+cp .env.template .env
+# Edit .env with your values
+
+# 3. Run development server
+npm run dev
 ```
 
-Start the server
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-```bash
-  npm run dev
+## 📁 Project Structure
+
+```
+├── app/
+│   ├── api/              # API routes
+│   │   ├── auth/         # Authentication endpoints
+│   │   ├── locations/    # Location data endpoints
+│   │   ├── trips/        # Trip management
+│   │   ├── violations/   # Speed violations
+│   │   ├── analytics/    # Data analytics
+│   │   └── admin/        # Admin endpoints
+│   ├── admin/            # Admin dashboard pages
+│   ├── dashboard/        # User dashboard
+│   ├── login/            # Authentication pages
+│   └── register/
+├── components/
+│   ├── Maps.tsx          # Main tracking component
+│   ├── Header.tsx        # Navigation
+│   ├── PersonalizedBanner.tsx  # Data-influenced UI
+│   └── GoogleMapsProvider.tsx
+├── lib/
+│   ├── mongodb.ts        # Database connection
+│   ├── models.ts         # Mongoose schemas
+│   ├── tripDetection.ts  # Trip detection algorithm
+│   ├── utils.ts          # Speed estimation & helpers
+│   └── authOptions.ts    # NextAuth configuration
+└── types/
+    └── location.ts       # TypeScript interfaces
 ```
 
-## Documentation
+## 🔐 Environment Variables
 
-[Tanstack-Query](https://tanstack.com/query/latest) used to fetch the data from /shared/mock/courseProjects.json Used in the data.service.ts fetchData.ts useCourseProjectsQuery.ts also in the card, filter and portal component.
+See `.env.template` for all required variables:
 
-[React-i18next](https://react.i18next.com/) used to make translations used in /core/i18n.
+| Variable                      | Description               |
+| ----------------------------- | ------------------------- |
+| `NEXT_PUBLIC_GOOGLE_MAPS_API` | Google Maps API key       |
+| `MONGODB_URI`                 | MongoDB connection string |
+| `NEXTAUTH_SECRET`             | Secret for JWT signing    |
+| `NEXTAUTH_URL`                | Base URL of the app       |
 
-[Tailwindcss](https://tailwindcss.com/docs/installation/using-vite)
+## 📊 How Data Influences UI
 
-[React-icons](https://react-icons.github.io/react-icons/) For Search bar.
+The `PersonalizedBanner` component demonstrates how collected data changes the user experience:
 
-[MaterialUI](https://mui.com/material-ui/react-select/) Dropdown filter component.
+| Driving Style | Banner Color | Message                  |
+| ------------- | ------------ | ------------------------ |
+| Aggressive    | 🔴 Red       | Warning about risk score |
+| Moderate      | 🟡 Yellow    | Tips for improvement     |
+| Careful       | 🟢 Green     | Positive reinforcement   |
 
-[Motion.dev](https://tanstack.com/query/latest) For WavyTitle and ScatterText component.
+The banner also considers:
 
-[dev.to](https://dev.to/bravemaster619/simplest-way-to-embed-a-youtube-video-in-your-react-app-3bk2) To embed youtube videos in my makingOf page.
+- Time of day (greets based on typical driving schedule)
+- Violation count (warns about insurance implications)
+- Risk score (shows potential consequences)
 
-[GSAP](https://gsap.com/docs/v3/) Most of my animations in my parallax page.
+## ⚠️ Known Limitations
 
-[React Three Fiber](https://r3f.docs.pmnd.rs/getting-started/introduction?trk=public_post_comment-text) and [React Three Drei](https://drei.docs.pmnd.rs/getting-started/introduction) For my 3D models
+1. **Google Maps API Key Required** - The project requires a Google Maps API key. This goes against the "no external API keys" requirement, but was necessary for proper map visualization.
 
-[React-Icons](https://react-icons.github.io/react-icons/) For some of the icons i used.
+2. **Speed Limit Estimation** - Since real road speed limit data is not freely available, we estimate limits based on driving speed. This can lead to false violations.
 
-[Motion](https://examples.motion.dev/react) For some of the text animation assets.
+3. **GPS Accuracy** - Mobile GPS can be inaccurate, especially in urban areas or tunnels.
 
-## Author
+4. **HTTPS Required** - Location tracking on mobile devices requires HTTPS. For local development, use localhost.
 
-[**Eren Sahbaz**](https://github.com/ErenSahbaz1)
+## 📚 Documentation & Sources
+
+### Libraries Used
+
+- [Next.js 15](https://nextjs.org/docs) - React framework
+- [NextAuth.js](https://next-auth.js.org/) - Authentication
+- [Mongoose](https://mongoosejs.com/) - MongoDB ODM
+- [Google Maps React](https://www.npmjs.com/package/@react-google-maps/api) - Maps integration
+- [Recharts](https://recharts.org/) - Data visualization
+- [Tailwind CSS](https://tailwindcss.com/) - Styling
+
+### AI Assistance
+
+This project was developed with assistance from GitHub Copilot (Claude) for:
+
+- Code structure and architecture
+- Bug fixes and debugging
+- Responsive design implementation
+- Documentation
+
+## 👤 Author
+
+**Eren Sahbaz**
+
+- GitHub: [@ErenSahbaz1](https://github.com/ErenSahbaz1)
+- Email: eren.sahbaz@student.ehb.be
 
 MCT Student @ Erasmushogeschool Brussel
 
-Languages: Dutch, Turkish, English, French
+## 📄 License
 
-Contact: eren.sahbaz@student.ehb.be / nendari01@gmail.com
-
-## Credits
-
--
-
-## Extra's
-
-
-
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
-
-## Getting Started
-
-First, run the development server:
-
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This project is part of a school assignment for Dev5 at EHB.
