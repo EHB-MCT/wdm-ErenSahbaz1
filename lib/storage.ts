@@ -38,6 +38,25 @@ class DataStorage {
 		}));
 	}
 
+	// Get locations for a specific trip
+	async getTripLocations(tripId: string): Promise<LocationPoint[]> {
+		await connectDB();
+		const locations = await Location.find({ tripId })
+			.sort({ timestamp: 1 })
+			.lean<Array<ILocation & { _id: Types.ObjectId }>>();
+
+		return locations.map((loc) => ({
+			id: loc._id.toString(),
+			userId: loc.userId,
+			latitude: loc.latitude,
+			longitude: loc.longitude,
+			timestamp: loc.timestamp.getTime(),
+			speed: loc.speed ?? undefined,
+			accuracy: loc.accuracy ?? undefined,
+			heading: loc.heading ?? undefined,
+		}));
+	}
+
 	// Get all locations (admin use)
 	async getAllLocations(): Promise<LocationPoint[]> {
 		await connectDB();

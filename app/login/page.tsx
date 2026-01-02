@@ -1,41 +1,39 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+import { useState } from "react";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function LoginPage() {
-	const [email, setEmail] = useState('');
-	const [password, setPassword] = useState('');
-	const [error, setError] = useState('');
+	const [email, setEmail] = useState("");
+	const [password, setPassword] = useState("");
+	const [error, setError] = useState("");
 	const [loading, setLoading] = useState(false);
 	const router = useRouter();
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
-		setError('');
+		setError("");
 		setLoading(true);
 
 		try {
-			const res = await fetch('/api/auth/login', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ email, password }),
+			const result = await signIn("credentials", {
+				email,
+				password,
+				redirect: false,
 			});
 
-			const data = await res.json();
-
-			if (!res.ok) {
-				setError(data.error || 'Login failed');
+			if (result?.error) {
+				setError(result.error);
 				setLoading(false);
 				return;
 			}
 
-			// Redirect to home page
-			router.push('/');
+			router.push("/");
 			router.refresh();
-		} catch (err) {
-			setError('An error occurred. Please try again.');
+		} catch {
+			setError("An error occurred. Please try again.");
 			setLoading(false);
 		}
 	};
@@ -48,8 +46,11 @@ export default function LoginPage() {
 						Sign in to your account
 					</h2>
 					<p className="mt-2 text-center text-sm text-gray-600">
-						Or{' '}
-						<Link href="/register" className="font-medium text-blue-600 hover:text-blue-500">
+						Or{" "}
+						<Link
+							href="/register"
+							className="font-medium text-blue-600 hover:text-blue-500"
+						>
 							create a new account
 						</Link>
 					</p>
@@ -103,7 +104,7 @@ export default function LoginPage() {
 							disabled={loading}
 							className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
 						>
-							{loading ? 'Signing in...' : 'Sign in'}
+							{loading ? "Signing in..." : "Sign in"}
 						</button>
 					</div>
 				</form>

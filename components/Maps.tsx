@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useEffect, useState, useRef } from "react";
+import { useSession } from "next-auth/react";
 import { GoogleMap, Marker, Polyline } from "@react-google-maps/api";
 import { useGoogleMaps } from "./GoogleMapsProvider";
-import { getUserId, calculateSpeed } from "@/lib/utils";
+import { calculateSpeed } from "@/lib/utils";
 import { LocationPoint } from "@/types/location";
 
 const containerStyle = {
@@ -11,9 +12,10 @@ const containerStyle = {
 	height: "600px",
 };
 
+// Default to Brussels, Belgium
 const defaultCenter = {
-	lat: 40.7128,
-	lng: -74.006,
+	lat: 50.8503,
+	lng: 4.3517,
 };
 
 // Speed limit for testing (km/h) - in real app, this would come from road data
@@ -21,6 +23,7 @@ const DEFAULT_SPEED_LIMIT = 70;
 
 export default function Maps() {
 	const { isLoaded, loadError } = useGoogleMaps();
+	const { data: session } = useSession();
 	const [userLocation, setUserLocation] = useState<{
 		lat: number;
 		lng: number;
@@ -31,10 +34,21 @@ export default function Maps() {
 	const [currentSpeed, setCurrentSpeed] = useState<number>(0);
 	const [isTracking, setIsTracking] = useState(true);
 	const [locationHistory, setLocationHistory] = useState<LocationPoint[]>([]);
+	const [usingDefaultLocation, setUsingDefaultLocation] = useState(false);
 
 	const watchIdRef = useRef<number | null>(null);
 	const lastLocationRef = useRef<LocationPoint | null>(null);
-	const userIdRef = useRef<string>(getUserId());
+
+	const userId = session?.user?.id;
+
+	// Use default location when geolocation fails
+	const useDefaultLocation = () => {
+		setUserLocation(defaultCenter);
+		setUsingDefaultLocation(true);
+		setError(null);
+		setLoading(false);
+		setIsTracking(false);
+	};
 
 	// Function to send location to server
 	const sendLocationToServer = async (location: LocationPoint) => {
@@ -97,6 +111,11 @@ export default function Maps() {
 			return;
 		}
 
+		// Wait for user ID to be fetched
+		if (!userId) {
+			return;
+		}
+
 		if (isTracking) {
 			// Watch position continuously
 			watchIdRef.current = navigator.geolocation.watchPosition(
@@ -105,7 +124,7 @@ export default function Maps() {
 						id: `loc_${Date.now()}_${Math.random()
 							.toString(36)
 							.substring(2, 9)}`,
-						userId: userIdRef.current,
+						userId: userId,
 						latitude: position.coords.latitude,
 						longitude: position.coords.longitude,
 						timestamp: Date.now(),
@@ -150,13 +169,48 @@ export default function Maps() {
 				},
 				(error) => {
 					console.error("Error getting location:", error);
-					setError("Unable to get your location");
+					let errorMessage = "Unable to get your location";
+
+					switch (error.code) {
+						case error.PERMISSION_DENIED:
+							errorMessage =
+								"Location permission denied. Please allow location access in your browser settings.";
+							break;
+						case error.POSITION_UNAVAILABLE:
+							errorMessage =
+								"Location information is unavailable. Make sure location services are enabled.";
+							break;
+						case error.TIMEOUT:
+							errorMessage =
+								"Location request timed out. Retrying with lower accuracy...";
+							// Try again with lower accuracy settings
+							navigator.geolocation.getCurrentPosition(
+								(position) => {
+									setUserLocation({
+										lat: position.coords.latitude,
+										lng: position.coords.longitude,
+									});
+									setError(null);
+									setLoading(false);
+								},
+								() => {
+									setError(
+										"Could not get location. Please check your location settings."
+									);
+									setLoading(false);
+								},
+								{ enableHighAccuracy: false, timeout: 15000, maximumAge: 60000 }
+							);
+							return;
+					}
+
+					setError(errorMessage);
 					setLoading(false);
 				},
 				{
 					enableHighAccuracy: true,
-					timeout: 5000,
-					maximumAge: 0, // Always get fresh location
+					timeout: 15000,
+					maximumAge: 5000, // Allow slightly cached location
 				}
 			);
 		}
@@ -167,7 +221,7 @@ export default function Maps() {
 				navigator.geolocation.clearWatch(watchIdRef.current);
 			}
 		};
-	}, [isTracking]);
+	}, [isTracking, userId]);
 
 	const mapCenter = userLocation || defaultCenter;
 
@@ -179,11 +233,27 @@ export default function Maps() {
 	return (
 		<div className="relative w-full">
 			{/* Control Panel */}
-			<div className="absolute top-4 left-4 z-10 bg-white p-4 rounded-lg shadow-lg">
+			<div className="absolute top-4 left-4 z-10 bg-white p-4 rounded-lg shadow-lg max-w-xs">
 				<h2 className="text-lg font-bold mb-2">Location Tracker</h2>
 
 				{loading && <p className="text-gray-600">Getting location...</p>}
-				{error && <p className="text-red-600">{error}</p>}
+				{error && (
+					<div className="space-y-2">
+						<p className="text-red-600 text-sm">{error}</p>
+						<button
+							onClick={useDefaultLocation}
+							className="w-full px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
+						>
+							Use Default Location (Brussels)
+						</button>
+					</div>
+				)}
+
+				{usingDefaultLocation && (
+					<p className="text-yellow-600 text-sm mb-2">
+						Using default location (demo mode)
+					</p>
+				)}
 
 				{userLocation && (
 					<div className="space-y-2">

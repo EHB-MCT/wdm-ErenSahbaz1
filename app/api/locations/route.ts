@@ -62,6 +62,13 @@ export async function GET(request: NextRequest) {
 	try {
 		const searchParams = request.nextUrl.searchParams;
 		const userId = searchParams.get("userId");
+		const tripId = searchParams.get("tripId");
+
+		if (tripId) {
+			// Get locations for specific trip
+			const locations = await storage.getTripLocations(tripId);
+			return NextResponse.json({ locations });
+		}
 
 		if (userId) {
 			// Get locations for specific user

@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
 import { GoogleMapsProvider } from "@/components/GoogleMapsProvider";
+import AuthProvider from "@/components/AuthProvider";
+import UserTracker from "@/components/UserTracker";
 
 const geistSans = Geist({
 	variable: "--font-geist-sans",
@@ -28,11 +30,15 @@ export default function RootLayout({
 		<html lang="en">
 			<body
 				className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+				suppressHydrationWarning
 			>
-				<GoogleMapsProvider>
-					<Header />
-					{children}
-				</GoogleMapsProvider>
+				<AuthProvider>
+					<GoogleMapsProvider>
+						<UserTracker />
+						<Header />
+						{children}
+					</GoogleMapsProvider>
+				</AuthProvider>
 			</body>
 		</html>
 	);
