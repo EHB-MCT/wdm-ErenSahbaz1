@@ -1,4 +1,4 @@
-// Types for location tracking system
+// Type definitions for location tracking
 
 export interface LocationPoint {
 	id: string;
@@ -6,9 +6,10 @@ export interface LocationPoint {
 	latitude: number;
 	longitude: number;
 	timestamp: number;
-	speed?: number; // km/h
-	accuracy?: number; // meters
-	heading?: number; // degrees
+	speed?: number;
+	accuracy?: number;
+	heading?: number;
+	tripId?: string;
 }
 
 export interface SpeedViolation {
@@ -17,32 +18,14 @@ export interface SpeedViolation {
 	latitude: number;
 	longitude: number;
 	timestamp: number;
-	actualSpeed: number; // km/h
-	speedLimit: number; // km/h
-	excess: number; // km/h over limit
+	actualSpeed: number;
+	speedLimit: number;
+	excess: number;
 }
 
 export interface UserRoute {
-	userId: string;
-	startTime: number;
-	endTime: number;
-	locations: LocationPoint[];
-	totalDistance: number; // km
-	averageSpeed: number; // km/h
-	maxSpeed: number; // km/h
-	violations: SpeedViolation[];
-}
-
-export interface UserAnalytics {
-	userId: string;
-	totalTrips: number;
+	points: LocationPoint[];
 	totalDistance: number;
 	averageSpeed: number;
-	commonLocations: {
-		type: "home" | "work" | "frequent";
-		latitude: number;
-		longitude: number;
-		visitCount: number;
-	}[];
-	violationsCount: number;
+	violations: SpeedViolation[];
 }
