@@ -203,57 +203,61 @@ export default function ChartsPage() {
 	}
 
 	return (
-		<div className="min-h-screen bg-gray-100 p-8">
+		<div className="min-h-screen bg-gray-100 p-3 sm:p-8">
 			<div className="max-w-7xl mx-auto">
-				<div className="flex items-center justify-between mb-8">
+				<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
 					<div>
-						<h1 className="text-3xl font-bold">📊 Data Visualization</h1>
-						<p className="text-gray-600">
+						<h1 className="text-xl sm:text-3xl font-bold">
+							📊 Data Visualization
+						</h1>
+						<p className="text-sm sm:text-base text-gray-600">
 							Charts and analytics from collected data
 						</p>
 					</div>
 					<a
 						href="/admin"
-						className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+						className="px-3 sm:px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 text-sm sm:text-base w-fit"
 					>
-						← Back to Admin
+						← Back
 					</a>
 				</div>
 
 				{/* Stats Summary */}
-				<div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-					<div className="bg-white rounded-lg shadow p-6 text-center">
-						<p className="text-3xl font-bold text-blue-600">{trips.length}</p>
-						<p className="text-gray-600">Total Trips</p>
+				<div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 mb-6 sm:mb-8">
+					<div className="bg-white rounded-lg shadow p-3 sm:p-6 text-center">
+						<p className="text-xl sm:text-3xl font-bold text-blue-600">
+							{trips.length}
+						</p>
+						<p className="text-xs sm:text-base text-gray-600">Trips</p>
 					</div>
-					<div className="bg-white rounded-lg shadow p-6 text-center">
-						<p className="text-3xl font-bold text-green-600">
+					<div className="bg-white rounded-lg shadow p-3 sm:p-6 text-center">
+						<p className="text-xl sm:text-3xl font-bold text-green-600">
 							{locations.length}
 						</p>
-						<p className="text-gray-600">Data Points</p>
+						<p className="text-xs sm:text-base text-gray-600">Data Points</p>
 					</div>
-					<div className="bg-white rounded-lg shadow p-6 text-center">
-						<p className="text-3xl font-bold text-red-600">
+					<div className="bg-white rounded-lg shadow p-3 sm:p-6 text-center">
+						<p className="text-xl sm:text-3xl font-bold text-red-600">
 							{violations.length}
 						</p>
-						<p className="text-gray-600">Violations</p>
+						<p className="text-xs sm:text-base text-gray-600">Violations</p>
 					</div>
-					<div className="bg-white rounded-lg shadow p-6 text-center">
-						<p className="text-3xl font-bold text-purple-600">
+					<div className="bg-white rounded-lg shadow p-3 sm:p-6 text-center">
+						<p className="text-xl sm:text-3xl font-bold text-purple-600">
 							{new Set(trips.map((t) => t.userId)).size}
 						</p>
-						<p className="text-gray-600">Unique Users</p>
+						<p className="text-xs sm:text-base text-gray-600">Users</p>
 					</div>
 				</div>
 
 				{chartData && (
-					<div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+					<div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8">
 						{/* Trips Over Time */}
-						<div className="bg-white rounded-lg shadow p-6">
-							<h3 className="text-lg font-semibold mb-4">
-								📅 Trips Over Time (Last 7 Days)
+						<div className="bg-white rounded-lg shadow p-3 sm:p-6">
+							<h3 className="text-sm sm:text-lg font-semibold mb-3 sm:mb-4">
+								📅 Trips Over Time
 							</h3>
-							<ResponsiveContainer width="100%" height={300}>
+							<ResponsiveContainer width="100%" height={250}>
 								<AreaChart data={chartData.tripsPerDay}>
 									<CartesianGrid strokeDasharray="3 3" />
 									<XAxis dataKey="date" />

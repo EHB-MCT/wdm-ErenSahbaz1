@@ -56,19 +56,136 @@ export function calculateSpeed(
 }
 
 /**
- * Generate a simple user ID (in production, use proper authentication)
+ * SPEED LIMIT ESTIMATION
+ *
+ * Since we cannot access real road speed limit data (Google Roads API requires
+ * special access), we estimate speed limits based on driving patterns.
+ *
  */
-export function getUserId(): string {
-	// Check if user already has an ID in localStorage
-	if (typeof window !== "undefined") {
-		let userId = localStorage.getItem("userId");
-		if (!userId) {
-			userId = "user_" + Math.random().toString(36).substring(2, 15);
-			localStorage.setItem("userId", userId);
+
+interface SpeedLimitEstimate {
+	limit: number;
+	roadType: string;
+	confidence: number; // 0-100, how confident we are in this estimate
+}
+
+/**
+ * Estimate speed limit based on current speed and recent driving patterns
+ *
+ * Algorithm:
+ * 1. Look at current speed to guess road type
+ * 2. Consider time of day (rush hour = likely urban)
+ * 3. Consider recent speed history for context
+ *
+ * @param currentSpeed - Current speed in km/h
+ * @param recentSpeeds - Array of recent speed readings for context
+ * @param timeOfDay - Hour of day (0-23)
+ * @returns Estimated speed limit and road type
+ */
+export function estimateSpeedLimit(
+	currentSpeed: number,
+	recentSpeeds: number[] = [],
+	timeOfDay: number = new Date().getHours()
+): SpeedLimitEstimate {
+	// Calculate average recent speed for context
+	const avgRecentSpeed =
+		recentSpeeds.length > 0
+			? recentSpeeds.reduce((a, b) => a + b, 0) / recentSpeeds.length
+			: currentSpeed;
+
+	// Use the higher of current or average for road type detection
+	// This prevents stop-and-go traffic from lowering the limit unfairly
+	const referenceSpeed = Math.max(currentSpeed, avgRecentSpeed);
+
+	// Rush hour adjustment (7-9 AM, 5-7 PM)
+	const isRushHour =
+		(timeOfDay >= 7 && timeOfDay <= 9) || (timeOfDay >= 17 && timeOfDay <= 19);
+
+	// Night time (might be highway even at lower speeds due to less traffic)
+	const isNightTime = timeOfDay >= 22 || timeOfDay <= 5;
+
+	// Determine road type and speed limit
+	if (referenceSpeed > 100) {
+		// Definitely highway
+		return {
+			limit: 120,
+			roadType: "Highway (Autosnelweg)",
+			confidence: 90,
+		};
+	} else if (referenceSpeed > 75) {
+		// Regional road or slow highway
+		return {
+			limit: 90,
+			roadType: "Regional Road (Gewestweg)",
+			confidence: 70,
+		};
+	} else if (referenceSpeed > 55) {
+		// Could be regional road or fast urban
+		if (isRushHour) {
+			// Rush hour = probably urban road with flowing traffic
+			return {
+				limit: 50,
+				roadType: "Urban Road (rush hour)",
+				confidence: 60,
+			};
 		}
-		return userId;
+		return {
+			limit: 70,
+			roadType: "Secondary Road",
+			confidence: 65,
+		};
+	} else if (referenceSpeed > 35) {
+		// Urban road
+		return {
+			limit: 50,
+			roadType: "Urban Road (Bebouwde kom)",
+			confidence: 75,
+		};
+	} else if (referenceSpeed > 20) {
+		// Residential or school zone
+		const isSchoolHours = timeOfDay >= 8 && timeOfDay <= 16;
+		return {
+			limit: isSchoolHours ? 30 : 50,
+			roadType: isSchoolHours ? "School Zone" : "Residential Area",
+			confidence: isSchoolHours ? 50 : 55,
+		};
+	} else {
+		// Very slow - parking, traffic jam, or 30 zone
+		return {
+			limit: 30,
+			roadType: "Residential/Zone 30",
+			confidence: 40, // Low confidence - could be anywhere with slow traffic
+		};
 	}
-	return "anonymous";
+}
+
+/**
+ * Check if a speed is a violation given the estimated limit
+ * Includes a small tolerance (5 km/h) to account for GPS inaccuracy
+ */
+export function isSpeedViolation(
+	currentSpeed: number,
+	estimatedLimit: number,
+	tolerance: number = 5
+): boolean {
+	return currentSpeed > estimatedLimit + tolerance;
+}
+
+/**
+ * Calculate how severe a speed violation is
+ * Used for risk scoring
+ */
+export function getViolationSeverity(
+	actualSpeed: number,
+	speedLimit: number
+): "minor" | "moderate" | "severe" | "extreme" {
+	const excess = actualSpeed - speedLimit;
+	const percentOver = (excess / speedLimit) * 100;
+
+	if (percentOver > 50) return "extreme"; // 50%+ over limit
+	if (percentOver > 30) return "severe"; // 30-50% over
+	if (percentOver > 15) return "moderate"; // 15-30% over
+	return "minor"; // <15% over
 }
 
 /**
