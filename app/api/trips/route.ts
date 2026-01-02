@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
 		const userId = searchParams.get("userId");
 		const activeOnly = searchParams.get("activeOnly") === "true";
 
-		let query: Record<string, unknown> = {};
+		const query: Record<string, unknown> = {};
 
 		if (userId) {
 			query.userId = userId;

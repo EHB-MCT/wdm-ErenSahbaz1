@@ -3,7 +3,6 @@ import { Trip, Location } from "./models";
 import { calculateDistance } from "./utils";
 
 const IDLE_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
-const MIN_DISTANCE_KM = 0.05; // 50 meters minimum movement
 const MIN_SPEED_KMH = 3; // Minimum speed to be considered moving
 
 interface LocationData {
@@ -88,7 +87,7 @@ export async function startNewTrip(
 /**
  * End an active trip
  */
-export async function endTrip(tripId: string, userId: string): Promise<void> {
+export async function endTrip(tripId: string, _userId: string): Promise<void> {
 	await connectDB();
 
 	// Get last location for this trip
