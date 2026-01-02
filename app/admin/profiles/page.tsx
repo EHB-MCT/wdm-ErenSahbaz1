@@ -61,7 +61,8 @@ interface User {
 
 const mapContainerStyle = {
 	width: "100%",
-	height: "400px",
+	height: "100%",
+	minHeight: "300px",
 };
 
 export default function UserProfilesPage() {
@@ -145,36 +146,43 @@ export default function UserProfilesPage() {
 		: { lat: 50.8503, lng: 4.3517 };
 
 	return (
-		<div className="min-h-screen bg-gray-100 p-8">
+		<div className="min-h-screen bg-gray-100 p-3 sm:p-8">
 			<div className="max-w-7xl mx-auto">
-				<div className="flex items-center justify-between mb-8">
+				<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
 					<div>
-						<h1 className="text-3xl font-bold">🔍 User Profiles</h1>
-						<p className="text-gray-600">Analyze user behavior and patterns</p>
+						<h1 className="text-xl sm:text-3xl font-bold">🔍 User Profiles</h1>
+						<p className="text-sm sm:text-base text-gray-600">
+							Analyze user behavior and patterns
+						</p>
 					</div>
 					<a
 						href="/admin"
-						className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+						className="px-3 sm:px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 text-sm sm:text-base w-fit"
 					>
-						← Back to Admin
+						← Back
 					</a>
 				</div>
 
 				{/* User Selection */}
-				<div className="bg-white rounded-lg shadow p-6 mb-8">
-					<h2 className="text-lg font-semibold mb-4">Select User to Analyze</h2>
+				<div className="bg-white rounded-lg shadow p-4 sm:p-6 mb-6 sm:mb-8">
+					<h2 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">
+						Select User to Analyze
+					</h2>
 					<div className="flex flex-wrap gap-2">
 						{users.map((user) => (
 							<button
 								key={user._id}
 								onClick={() => setSelectedUser(user._id)}
-								className={`px-4 py-2 rounded-lg border transition-colors ${
+								className={`px-3 sm:px-4 py-2 rounded-lg border transition-colors text-xs sm:text-sm ${
 									selectedUser === user._id
 										? "bg-blue-600 text-white border-blue-600"
 										: "bg-white hover:bg-gray-50 border-gray-300"
 								}`}
 							>
-								{user.name} ({user.email})
+								<span className="hidden sm:inline">
+									{user.name} ({user.email})
+								</span>
+								<span className="sm:hidden">{user.name}</span>
 							</button>
 						))}
 					</div>
@@ -194,13 +202,13 @@ export default function UserProfilesPage() {
 				)}
 
 				{profile && (
-					<div className="space-y-8">
+					<div className="space-y-4 sm:space-y-8">
 						{/* Inferred Locations */}
-						<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+						<div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
 							{/* Home */}
-							<div className="bg-white rounded-lg shadow p-6">
-								<h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-									🏠 Likely Home Location
+							<div className="bg-white rounded-lg shadow p-4 sm:p-6">
+								<h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 flex items-center gap-2">
+									🏠 Likely Home
 								</h3>
 								{profile.likelyHome ? (
 									<div className="space-y-2">
@@ -233,9 +241,9 @@ export default function UserProfilesPage() {
 							</div>
 
 							{/* Work */}
-							<div className="bg-white rounded-lg shadow p-6">
-								<h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-									🏢 Likely Work Location
+							<div className="bg-white rounded-lg shadow p-4 sm:p-6">
+								<h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 flex items-center gap-2">
+									🏢 Likely Work
 								</h3>
 								{profile.likelyWork ? (
 									<div className="space-y-2">

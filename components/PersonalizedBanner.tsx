@@ -146,20 +146,33 @@ export default function PersonalizedBanner() {
 
 	return (
 		<div
-			className={`${bgColors[content.alertLevel]} border-l-4 p-4 mb-6 relative`}
+			className={`${
+				bgColors[content.alertLevel]
+			} border-l-4 p-3 sm:p-4 mb-4 sm:mb-6 relative rounded-r-lg`}
 		>
 			<button
 				onClick={() => setDismissed(true)}
-				className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
+				className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 p-1"
+				aria-label="Dismiss"
 			>
-				✕
+				<svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+					<path
+						fillRule="evenodd"
+						d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+						clipRule="evenodd"
+					/>
+				</svg>
 			</button>
-			<div className={textColors[content.alertLevel]}>
-				<p className="font-semibold">{content.greeting}</p>
-				<p className="text-sm mt-1">{content.message}</p>
-				<p className="text-sm mt-1 opacity-80">💡 Tip: {content.tip}</p>
+			<div className={`${textColors[content.alertLevel]} pr-6`}>
+				<p className="font-semibold text-sm sm:text-base">{content.greeting}</p>
+				<p className="text-xs sm:text-sm mt-1">{content.message}</p>
+				<p className="text-xs sm:text-sm mt-1 opacity-80">
+					💡 Tip: {content.tip}
+				</p>
 				{content.speedWarning && (
-					<p className="text-sm mt-2 font-medium">{content.speedWarning}</p>
+					<p className="text-xs sm:text-sm mt-2 font-medium bg-white/30 p-2 rounded">
+						{content.speedWarning}
+					</p>
 				)}
 			</div>
 
@@ -168,20 +181,20 @@ export default function PersonalizedBanner() {
 				<summary
 					className={`text-xs ${
 						textColors[content.alertLevel]
-					} cursor-pointer opacity-60`}
+					} cursor-pointer opacity-60 hover:opacity-100 transition-opacity`}
 				>
 					View what we know about you
 				</summary>
-				<div className="mt-2 text-xs space-y-1">
+				<div className="mt-2 text-xs space-y-1 bg-white/20 p-2 rounded">
 					{insights ? (
-						<>
-							<p>• Driving style: {insights.drivingStyle}</p>
-							<p>• Risk score: {insights.riskScore}/100</p>
-							<p>• Average speed: {insights.averageSpeed} km/h</p>
-							<p>• Total violations: {insights.violationsCount}</p>
-							<p>• Total trips: {insights.totalTrips}</p>
-							<p>• Most active hour: {insights.mostActiveHour}:00</p>
-						</>
+						<div className="grid grid-cols-2 gap-1 sm:block sm:space-y-1">
+							<p>• Style: {insights.drivingStyle}</p>
+							<p>• Risk: {insights.riskScore}/100</p>
+							<p>• Avg speed: {insights.averageSpeed} km/h</p>
+							<p>• Violations: {insights.violationsCount}</p>
+							<p>• Trips: {insights.totalTrips}</p>
+							<p>• Active: {insights.mostActiveHour}:00</p>
+						</div>
 					) : (
 						<p>No data collected yet</p>
 					)}

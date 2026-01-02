@@ -3,7 +3,7 @@ import { Trip, Location } from "./models";
 import { calculateDistance } from "./utils";
 
 const IDLE_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
-const MIN_SPEED_KMH = 3; // Minimum speed to be considered moving
+const MIN_SPEED_KMH = 5; // Minimum speed to be considered moving
 
 interface LocationData {
 	latitude: number;

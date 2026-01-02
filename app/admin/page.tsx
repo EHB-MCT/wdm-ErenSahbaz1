@@ -7,7 +7,8 @@ import { LocationPoint, SpeedViolation } from "@/types/location";
 
 const containerStyle = {
 	width: "100%",
-	height: "600px",
+	height: "100%",
+	minHeight: "400px",
 };
 
 const defaultCenter = {
@@ -118,81 +119,143 @@ export default function AdminDashboard() {
 		<div className="min-h-screen bg-gray-50">
 			{/* Header */}
 			<div className="bg-white shadow">
-				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-					<h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-					<p className="text-sm text-gray-600 mt-1">
+				<div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-4">
+					<h1 className="text-xl sm:text-3xl font-bold text-gray-900">
+						Admin Dashboard
+					</h1>
+					<p className="text-xs sm:text-sm text-gray-600 mt-1">
 						Real-time monitoring and analytics
 					</p>
 				</div>
 			</div>
 
 			{/* Navigation */}
-			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-				<div className="flex space-x-4 mb-6">
+			<div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-4">
+				<div className="flex flex-wrap gap-2 sm:gap-4 mb-4 sm:mb-6">
 					<button
 						onClick={() => setView("trips")}
-						className={`px-4 py-2 rounded-md font-medium ${
+						className={`px-3 sm:px-4 py-2 rounded-md text-sm sm:text-base font-medium ${
 							view === "trips"
 								? "bg-blue-600 text-white"
 								: "bg-white text-gray-700 hover:bg-gray-100"
 						}`}
 					>
-						Trips ({allTrips.length})
+						<span className="hidden sm:inline">Trips</span>
+						<span className="sm:hidden">🚗</span> ({allTrips.length})
 					</button>
 					<button
 						onClick={() => setView("analytics")}
-						className={`px-4 py-2 rounded-md font-medium ${
+						className={`px-3 sm:px-4 py-2 rounded-md text-sm sm:text-base font-medium ${
 							view === "analytics"
 								? "bg-blue-600 text-white"
 								: "bg-white text-gray-700 hover:bg-gray-100"
 						}`}
 					>
-						Analytics
+						<span className="hidden sm:inline">Analytics</span>
+						<span className="sm:hidden">📈</span>
 					</button>
 					<button
 						onClick={() => setView("map")}
-						className={`px-4 py-2 rounded-md font-medium ${
+						className={`px-3 sm:px-4 py-2 rounded-md text-sm sm:text-base font-medium ${
 							view === "map"
 								? "bg-blue-600 text-white"
 								: "bg-white text-gray-700 hover:bg-gray-100"
 						}`}
 					>
-						Live Map
+						<span className="hidden sm:inline">Live Map</span>
+						<span className="sm:hidden">🗺️</span>
 					</button>
 					<button
 						onClick={() => setView("violations")}
-						className={`px-4 py-2 rounded-md font-medium ${
+						className={`px-3 sm:px-4 py-2 rounded-md text-sm sm:text-base font-medium ${
 							view === "violations"
 								? "bg-blue-600 text-white"
 								: "bg-white text-gray-700 hover:bg-gray-100"
 						}`}
 					>
-						Violations ({allViolations.length})
+						<span className="hidden sm:inline">Violations</span>
+						<span className="sm:hidden">⚠️</span> ({allViolations.length})
 					</button>
 					<a
 						href="/admin/profiles"
-						className="px-4 py-2 rounded-md font-medium bg-purple-600 text-white hover:bg-purple-700"
+						className="px-3 sm:px-4 py-2 rounded-md text-sm sm:text-base font-medium bg-purple-600 text-white hover:bg-purple-700"
 					>
-						🔍 User Profiles
+						🔍 <span className="hidden sm:inline">Profiles</span>
 					</a>
 					<a
 						href="/admin/charts"
-						className="px-4 py-2 rounded-md font-medium bg-green-600 text-white hover:bg-green-700"
+						className="px-3 sm:px-4 py-2 rounded-md text-sm sm:text-base font-medium bg-green-600 text-white hover:bg-green-700"
 					>
-						📊 Charts
+						📊 <span className="hidden sm:inline">Charts</span>
 					</a>
 				</div>
 
 				{/* Trips View */}
 				{view === "trips" && (
 					<div className="bg-white rounded-lg shadow overflow-hidden">
-						<div className="px-6 py-4 border-b">
-							<h2 className="text-lg font-semibold">All Trips</h2>
-							<p className="text-sm text-gray-600">
+						<div className="px-4 sm:px-6 py-3 sm:py-4 border-b">
+							<h2 className="text-base sm:text-lg font-semibold">All Trips</h2>
+							<p className="text-xs sm:text-sm text-gray-600">
 								{allTrips.filter((t) => t.isActive).length} active trips
 							</p>
 						</div>
-						<div className="overflow-x-auto">
+						{/* Mobile Card View */}
+						<div className="sm:hidden divide-y divide-gray-200">
+							{allTrips.map((trip) => (
+								<div key={trip.id} className="p-4 space-y-2">
+									<div className="flex justify-between items-center">
+										<span className="text-xs font-mono text-gray-500 truncate max-w-[120px]">
+											{trip.userId}
+										</span>
+										{trip.isActive ? (
+											<span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+												Active
+											</span>
+										) : (
+											<span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
+												Done
+											</span>
+										)}
+									</div>
+									<div className="grid grid-cols-2 gap-2 text-xs">
+										<div>
+											<span className="text-gray-500">Distance:</span>{" "}
+											{trip.totalDistance.toFixed(2)} km
+										</div>
+										<div>
+											<span className="text-gray-500">Avg:</span>{" "}
+											{trip.averageSpeed.toFixed(0)} km/h
+										</div>
+										<div>
+											<span className="text-gray-500">Max:</span>{" "}
+											{trip.maxSpeed.toFixed(0)} km/h
+										</div>
+										<div>
+											<span className="text-gray-500">Violations:</span>{" "}
+											<span
+												className={
+													trip.violationsCount > 0
+														? "text-red-600 font-semibold"
+														: "text-green-600"
+												}
+											>
+												{trip.violationsCount}
+											</span>
+										</div>
+									</div>
+									<div className="text-xs text-gray-500">
+										{new Date(trip.startTime).toLocaleString()}
+									</div>
+								</div>
+							))}
+							{allTrips.length === 0 && (
+								<div className="p-4 text-center text-sm text-gray-500">
+									No trips recorded yet
+								</div>
+							)}
+						</div>
+						{/* Desktop Table View */}
+						<div className="hidden sm:block overflow-x-auto">
 							<table className="min-w-full divide-y divide-gray-200">
 								<thead className="bg-gray-50">
 									<tr>
@@ -285,19 +348,21 @@ export default function AdminDashboard() {
 
 				{/* Analytics View */}
 				{view === "analytics" && (
-					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+					<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
 						{/* Summary Cards */}
-						<div className="bg-white rounded-lg shadow p-6">
-							<h3 className="text-sm font-medium text-gray-500">Total Users</h3>
-							<p className="text-3xl font-bold text-gray-900 mt-2">
+						<div className="bg-white rounded-lg shadow p-4 sm:p-6">
+							<h3 className="text-xs sm:text-sm font-medium text-gray-500">
+								Total Users
+							</h3>
+							<p className="text-2xl sm:text-3xl font-bold text-gray-900 mt-1 sm:mt-2">
 								{uniqueUsers.length}
 							</p>
 						</div>
-						<div className="bg-white rounded-lg shadow p-6">
-							<h3 className="text-sm font-medium text-gray-500">
+						<div className="bg-white rounded-lg shadow p-4 sm:p-6">
+							<h3 className="text-xs sm:text-sm font-medium text-gray-500">
 								Total Locations
 							</h3>
-							<p className="text-3xl font-bold text-gray-900 mt-2">
+							<p className="text-2xl sm:text-3xl font-bold text-gray-900 mt-1 sm:mt-2">
 								{allLocations.length}
 							</p>
 						</div>
@@ -452,65 +517,99 @@ export default function AdminDashboard() {
 				{/* Violations View */}
 				{view === "violations" && (
 					<div className="bg-white rounded-lg shadow overflow-hidden">
-						<table className="min-w-full divide-y divide-gray-200">
-							<thead className="bg-gray-50">
-								<tr>
-									<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-										User ID
-									</th>
-									<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-										Time
-									</th>
-									<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-										Location
-									</th>
-									<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-										Actual Speed
-									</th>
-									<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-										Speed Limit
-									</th>
-									<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-										Excess
-									</th>
-								</tr>
-							</thead>
-							<tbody className="bg-white divide-y divide-gray-200">
-								{allViolations.map((violation) => (
-									<tr key={violation.id} className="hover:bg-gray-50">
-										<td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+						{/* Mobile Card View */}
+						<div className="sm:hidden divide-y divide-gray-200">
+							{allViolations.map((violation) => (
+								<div key={violation.id} className="p-4 space-y-2">
+									<div className="flex justify-between items-start">
+										<span className="text-xs font-mono text-gray-500 truncate max-w-[120px]">
 											{violation.userId}
-										</td>
-										<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-											{new Date(violation.timestamp).toLocaleString()}
-										</td>
-										<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-											{violation.latitude.toFixed(4)},{" "}
-											{violation.longitude.toFixed(4)}
-										</td>
-										<td className="px-6 py-4 whitespace-nowrap text-sm text-red-600 font-semibold">
-											{violation.actualSpeed.toFixed(1)} km/h
-										</td>
-										<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-											{violation.speedLimit} km/h
-										</td>
-										<td className="px-6 py-4 whitespace-nowrap text-sm text-red-600 font-semibold">
-											+{violation.excess.toFixed(1)} km/h
-										</td>
-									</tr>
-								))}
-								{allViolations.length === 0 && (
+										</span>
+										<span className="text-red-600 font-bold text-sm">
+											+{violation.excess.toFixed(0)} km/h
+										</span>
+									</div>
+									<div className="flex justify-between text-sm">
+										<span className="text-red-600 font-semibold">
+											{violation.actualSpeed.toFixed(0)} km/h
+										</span>
+										<span className="text-gray-500">
+											Limit: {violation.speedLimit} km/h
+										</span>
+									</div>
+									<div className="text-xs text-gray-500">
+										{new Date(violation.timestamp).toLocaleString()}
+									</div>
+								</div>
+							))}
+							{allViolations.length === 0 && (
+								<div className="p-4 text-center text-sm text-gray-500">
+									No violations recorded yet
+								</div>
+							)}
+						</div>
+						{/* Desktop Table View */}
+						<div className="hidden sm:block">
+							<table className="min-w-full divide-y divide-gray-200">
+								<thead className="bg-gray-50">
 									<tr>
-										<td
-											colSpan={6}
-											className="px-6 py-4 text-center text-sm text-gray-500"
-										>
-											No violations recorded yet
-										</td>
+										<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+											User ID
+										</th>
+										<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+											Time
+										</th>
+										<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+											Location
+										</th>
+										<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+											Actual Speed
+										</th>
+										<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+											Speed Limit
+										</th>
+										<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+											Excess
+										</th>
 									</tr>
-								)}
-							</tbody>
-						</table>
+								</thead>
+								<tbody className="bg-white divide-y divide-gray-200">
+									{allViolations.map((violation) => (
+										<tr key={violation.id} className="hover:bg-gray-50">
+											<td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+												{violation.userId}
+											</td>
+											<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+												{new Date(violation.timestamp).toLocaleString()}
+											</td>
+											<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+												{violation.latitude.toFixed(4)},{" "}
+												{violation.longitude.toFixed(4)}
+											</td>
+											<td className="px-6 py-4 whitespace-nowrap text-sm text-red-600 font-semibold">
+												{violation.actualSpeed.toFixed(1)} km/h
+											</td>
+											<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+												{violation.speedLimit} km/h
+											</td>
+											<td className="px-6 py-4 whitespace-nowrap text-sm text-red-600 font-semibold">
+												+{violation.excess.toFixed(1)} km/h
+											</td>
+										</tr>
+									))}
+									{allViolations.length === 0 && (
+										<tr>
+											<td
+												colSpan={6}
+												className="px-6 py-4 text-center text-sm text-gray-500"
+											>
+												No violations recorded yet
+											</td>
+										</tr>
+									)}
+								</tbody>
+							</table>
+						</div>
 					</div>
 				)}
 			</div>

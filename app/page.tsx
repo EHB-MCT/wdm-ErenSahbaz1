@@ -4,17 +4,17 @@ import PersonalizedBanner from "@/components/PersonalizedBanner";
 export default function Home() {
 	return (
 		<div className="min-h-screen bg-gray-50">
-			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+			<div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
 				<PersonalizedBanner />
-				<div className="mb-6">
-					<h2 className="text-2xl font-bold text-gray-900">
+				<div className="mb-4 sm:mb-6">
+					<h2 className="text-xl sm:text-2xl font-bold text-gray-900">
 						Welcome to Drive Tracker
 					</h2>
-					<p className="text-gray-600 mt-2">
+					<p className="text-gray-600 mt-1 sm:mt-2 text-sm sm:text-base">
 						Your location is being tracked to help analyze driving patterns and
-						safety. This app monitors your speed and location in real-time.
+						safety.
 					</p>
-					<div className="mt-4 bg-yellow-50 border-l-4 border-yellow-400 p-4">
+					<div className="mt-3 sm:mt-4 bg-yellow-50 border-l-4 border-yellow-400 p-3 sm:p-4">
 						<div className="flex">
 							<div className="flex-shrink-0">
 								<svg
@@ -30,9 +30,8 @@ export default function Home() {
 								</svg>
 							</div>
 							<div className="ml-3">
-								<p className="text-sm text-yellow-700">
-									Please allow location permissions when prompted. Your data is
-									used for traffic analysis and safety monitoring.
+								<p className="text-xs sm:text-sm text-yellow-700">
+									Please allow location permissions when prompted.
 								</p>
 							</div>
 						</div>
