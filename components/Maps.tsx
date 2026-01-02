@@ -9,7 +9,8 @@ import { LocationPoint } from "@/types/location";
 
 const containerStyle = {
 	width: "100%",
-	height: "600px",
+	height: "100%",
+	minHeight: "400px",
 };
 
 // Default to Brussels, Belgium
@@ -231,18 +232,22 @@ export default function Maps() {
 	};
 
 	return (
-		<div className="relative w-full">
-			{/* Control Panel */}
-			<div className="absolute top-4 left-4 z-10 bg-white p-4 rounded-lg shadow-lg max-w-xs">
-				<h2 className="text-lg font-bold mb-2">Location Tracker</h2>
+		<div className="relative w-full h-[calc(100vh-200px)] min-h-[400px] sm:h-[500px] md:h-[600px]">
+			{/* Control Panel - Responsive positioning */}
+			<div className="absolute top-2 left-2 right-2 sm:top-4 sm:left-4 sm:right-auto z-10 bg-white p-3 sm:p-4 rounded-lg shadow-lg sm:max-w-xs">
+				<h2 className="text-base sm:text-lg font-bold mb-2">
+					Location Tracker
+				</h2>
 
-				{loading && <p className="text-gray-600">Getting location...</p>}
+				{loading && (
+					<p className="text-gray-600 text-sm">Getting location...</p>
+				)}
 				{error && (
 					<div className="space-y-2">
-						<p className="text-red-600 text-sm">{error}</p>
+						<p className="text-red-600 text-xs sm:text-sm">{error}</p>
 						<button
 							onClick={useDefaultLocation}
-							className="w-full px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
+							className="w-full px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-xs sm:text-sm"
 						>
 							Use Default Location (Brussels)
 						</button>
@@ -250,30 +255,32 @@ export default function Maps() {
 				)}
 
 				{usingDefaultLocation && (
-					<p className="text-yellow-600 text-sm mb-2">
+					<p className="text-yellow-600 text-xs sm:text-sm mb-2">
 						Using default location (demo mode)
 					</p>
 				)}
 
 				{userLocation && (
 					<div className="space-y-2">
-						<p className="text-sm">
-							<strong>Lat:</strong> {userLocation.lat.toFixed(6)}
-						</p>
-						<p className="text-sm">
-							<strong>Lng:</strong> {userLocation.lng.toFixed(6)}
-						</p>
-						<p className="text-sm">
+						<div className="grid grid-cols-2 gap-2 sm:block sm:space-y-2">
+							<p className="text-xs sm:text-sm">
+								<strong>Lat:</strong> {userLocation.lat.toFixed(4)}
+							</p>
+							<p className="text-xs sm:text-sm">
+								<strong>Lng:</strong> {userLocation.lng.toFixed(4)}
+							</p>
+						</div>
+						<p className="text-sm sm:text-base font-semibold">
 							<strong>Speed:</strong> {currentSpeed.toFixed(1)} km/h
 						</p>
 						{currentSpeed > DEFAULT_SPEED_LIMIT && (
-							<p className="text-red-600 font-bold text-sm">
+							<p className="text-red-600 font-bold text-xs sm:text-sm animate-pulse">
 								⚠️ Speed limit exceeded!
 							</p>
 						)}
 						<button
 							onClick={toggleTracking}
-							className={`w-full px-4 py-2 rounded text-white font-medium ${
+							className={`w-full px-3 sm:px-4 py-2 rounded text-white font-medium text-sm ${
 								isTracking
 									? "bg-red-500 hover:bg-red-600"
 									: "bg-green-500 hover:bg-green-600"
@@ -282,20 +289,20 @@ export default function Maps() {
 							{isTracking ? "Stop Tracking" : "Start Tracking"}
 						</button>
 						<p className="text-xs text-gray-500">
-							Points recorded: {locationHistory.length}
+							Points: {locationHistory.length}
 						</p>
 					</div>
 				)}
 			</div>
 
 			{loadError && (
-				<div className="h-[600px] flex items-center justify-center bg-gray-100">
+				<div className="h-full flex items-center justify-center bg-gray-100">
 					<p className="text-red-600">Error loading maps</p>
 				</div>
 			)}
 
 			{!isLoaded && !loadError && (
-				<div className="h-[600px] flex items-center justify-center bg-gray-100">
+				<div className="h-full flex items-center justify-center bg-gray-100">
 					<p className="text-gray-600">Loading map...</p>
 				</div>
 			)}

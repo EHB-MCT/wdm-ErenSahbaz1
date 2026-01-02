@@ -7,7 +7,8 @@ import { useGoogleMaps } from "@/components/GoogleMapsProvider";
 
 const containerStyle = {
 	width: "100%",
-	height: "400px",
+	height: "100%",
+	minHeight: "300px",
 };
 
 const defaultCenter = {
@@ -152,9 +153,9 @@ export default function UserDashboard() {
 
 	if (loading) {
 		return (
-			<div className="min-h-screen bg-gray-100 p-8">
+			<div className="min-h-screen bg-gray-100 p-4 sm:p-8">
 				<div className="max-w-7xl mx-auto">
-					<h1 className="text-3xl font-bold mb-8">My Dashboard</h1>
+					<h1 className="text-2xl sm:text-3xl font-bold mb-8">My Dashboard</h1>
 					<div className="text-center py-8">Loading your data...</div>
 				</div>
 			</div>
@@ -162,45 +163,58 @@ export default function UserDashboard() {
 	}
 
 	return (
-		<div className="min-h-screen bg-gray-100 p-8">
+		<div className="min-h-screen bg-gray-100 p-4 sm:p-8">
 			<div className="max-w-7xl mx-auto">
-				<h1 className="text-3xl font-bold mb-2">My Dashboard</h1>
-				<p className="text-gray-600 mb-8">
+				<h1 className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2">
+					My Dashboard
+				</h1>
+				<p className="text-gray-600 mb-4 sm:mb-8 text-sm sm:text-base">
 					Welcome back, {session?.user?.name}!
 				</p>
 
-				{/* Stats Cards */}
-				<div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
-					<div className="bg-white rounded-lg shadow p-6">
-						<h3 className="text-sm font-medium text-gray-500">Total Trips</h3>
-						<p className="text-3xl font-bold text-blue-600">
+				{/* Stats Cards - Responsive Grid */}
+				<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-4 mb-4 sm:mb-8">
+					<div className="bg-white rounded-lg shadow p-3 sm:p-6">
+						<h3 className="text-xs sm:text-sm font-medium text-gray-500">
+							Total Trips
+						</h3>
+						<p className="text-xl sm:text-3xl font-bold text-blue-600">
 							{stats?.totalTrips || 0}
 						</p>
 					</div>
-					<div className="bg-white rounded-lg shadow p-6">
-						<h3 className="text-sm font-medium text-gray-500">
-							Total Distance
+					<div className="bg-white rounded-lg shadow p-3 sm:p-6">
+						<h3 className="text-xs sm:text-sm font-medium text-gray-500">
+							Distance
 						</h3>
-						<p className="text-3xl font-bold text-green-600">
-							{stats?.totalDistance.toFixed(1) || 0} km
+						<p className="text-xl sm:text-3xl font-bold text-green-600">
+							{stats?.totalDistance.toFixed(1) || 0}
+							<span className="text-sm sm:text-lg"> km</span>
 						</p>
 					</div>
-					<div className="bg-white rounded-lg shadow p-6">
-						<h3 className="text-sm font-medium text-gray-500">Avg Speed</h3>
-						<p className="text-3xl font-bold text-purple-600">
-							{stats?.averageSpeed.toFixed(1) || 0} km/h
+					<div className="bg-white rounded-lg shadow p-3 sm:p-6">
+						<h3 className="text-xs sm:text-sm font-medium text-gray-500">
+							Avg Speed
+						</h3>
+						<p className="text-xl sm:text-3xl font-bold text-purple-600">
+							{stats?.averageSpeed.toFixed(0) || 0}
+							<span className="text-sm sm:text-lg"> km/h</span>
 						</p>
 					</div>
-					<div className="bg-white rounded-lg shadow p-6">
-						<h3 className="text-sm font-medium text-gray-500">Max Speed</h3>
-						<p className="text-3xl font-bold text-orange-600">
-							{stats?.maxSpeed.toFixed(1) || 0} km/h
+					<div className="bg-white rounded-lg shadow p-3 sm:p-6">
+						<h3 className="text-xs sm:text-sm font-medium text-gray-500">
+							Max Speed
+						</h3>
+						<p className="text-xl sm:text-3xl font-bold text-orange-600">
+							{stats?.maxSpeed.toFixed(0) || 0}
+							<span className="text-sm sm:text-lg"> km/h</span>
 						</p>
 					</div>
-					<div className="bg-white rounded-lg shadow p-6">
-						<h3 className="text-sm font-medium text-gray-500">Violations</h3>
+					<div className="bg-white rounded-lg shadow p-3 sm:p-6 col-span-2 sm:col-span-1">
+						<h3 className="text-xs sm:text-sm font-medium text-gray-500">
+							Violations
+						</h3>
 						<p
-							className={`text-3xl font-bold ${
+							className={`text-xl sm:text-3xl font-bold ${
 								(stats?.totalViolations || 0) > 0
 									? "text-red-600"
 									: "text-green-600"
@@ -211,15 +225,15 @@ export default function UserDashboard() {
 					</div>
 				</div>
 
-				<div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+				<div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8">
 					{/* Trips List */}
 					<div className="bg-white rounded-lg shadow">
-						<div className="p-4 border-b">
-							<h2 className="text-xl font-semibold">My Trips</h2>
+						<div className="p-3 sm:p-4 border-b">
+							<h2 className="text-lg sm:text-xl font-semibold">My Trips</h2>
 						</div>
-						<div className="max-h-[500px] overflow-y-auto">
+						<div className="max-h-[350px] sm:max-h-[500px] overflow-y-auto">
 							{trips.length === 0 ? (
-								<p className="p-4 text-gray-500">
+								<p className="p-4 text-gray-500 text-sm sm:text-base">
 									No trips recorded yet. Start tracking to see your trips!
 								</p>
 							) : (
@@ -227,39 +241,37 @@ export default function UserDashboard() {
 									{trips.map((trip) => (
 										<li
 											key={trip.id}
-											className={`p-4 hover:bg-gray-50 cursor-pointer ${
+											className={`p-3 sm:p-4 hover:bg-gray-50 cursor-pointer active:bg-gray-100 ${
 												selectedTrip?.id === trip.id ? "bg-blue-50" : ""
 											}`}
 											onClick={() => selectTrip(trip)}
 										>
-											<div className="flex justify-between items-start">
-												<div>
-													<p className="font-medium">
+											<div className="flex justify-between items-start gap-2">
+												<div className="min-w-0 flex-1">
+													<p className="font-medium text-sm sm:text-base truncate">
 														{new Date(trip.startTime).toLocaleDateString()} at{" "}
 														{new Date(trip.startTime).toLocaleTimeString([], {
 															hour: "2-digit",
 															minute: "2-digit",
 														})}
 													</p>
-													<p className="text-sm text-gray-500">
-														Duration:{" "}
+													<p className="text-xs sm:text-sm text-gray-500">
 														{formatDuration(trip.startTime, trip.endTime)}
 													</p>
-													<p className="text-sm text-gray-500">
-														Distance: {trip.totalDistance.toFixed(2)} km • Avg:{" "}
-														{trip.averageSpeed.toFixed(1)} km/h
+													<p className="text-xs sm:text-sm text-gray-500">
+														{trip.totalDistance.toFixed(1)} km •{" "}
+														{trip.averageSpeed.toFixed(0)} km/h
 													</p>
 												</div>
-												<div className="text-right">
+												<div className="text-right flex-shrink-0 flex flex-col gap-1">
 													{trip.isActive && (
-														<span className="inline-block px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
+														<span className="inline-block px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">
 															Active
 														</span>
 													)}
 													{trip.violationsCount > 0 && (
-														<span className="inline-block px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full ml-1">
-															{trip.violationsCount} violation
-															{trip.violationsCount > 1 ? "s" : ""}
+														<span className="inline-block px-2 py-0.5 bg-red-100 text-red-800 text-xs rounded-full">
+															{trip.violationsCount}
 														</span>
 													)}
 												</div>
@@ -273,12 +285,12 @@ export default function UserDashboard() {
 
 					{/* Trip Map */}
 					<div className="bg-white rounded-lg shadow">
-						<div className="p-4 border-b">
-							<h2 className="text-xl font-semibold">
-								{selectedTrip ? "Trip Route" : "Select a trip to view"}
+						<div className="p-3 sm:p-4 border-b">
+							<h2 className="text-lg sm:text-xl font-semibold">
+								{selectedTrip ? "Trip Route" : "Select a trip"}
 							</h2>
 						</div>
-						<div className="p-4">
+						<div className="p-2 sm:p-4 h-[300px] sm:h-[400px]">
 							{!isLoaded ? (
 								<div className="h-[400px] flex items-center justify-center bg-gray-100 rounded">
 									<p className="text-gray-600">Loading map...</p>
@@ -345,26 +357,48 @@ export default function UserDashboard() {
 
 				{/* Recent Violations */}
 				{violations.length > 0 && (
-					<div className="mt-8 bg-white rounded-lg shadow">
-						<div className="p-4 border-b">
-							<h2 className="text-xl font-semibold text-red-600">
+					<div className="mt-4 sm:mt-8 bg-white rounded-lg shadow">
+						<div className="p-3 sm:p-4 border-b">
+							<h2 className="text-lg sm:text-xl font-semibold text-red-600">
 								Recent Violations
 							</h2>
 						</div>
-						<div className="overflow-x-auto">
+						{/* Mobile card view */}
+						<div className="sm:hidden divide-y">
+							{violations.slice(0, 10).map((v) => (
+								<div key={v.id} className="p-3">
+									<p className="text-sm text-gray-900">
+										{new Date(v.timestamp).toLocaleString()}
+									</p>
+									<div className="flex justify-between mt-1">
+										<span className="text-red-600 font-medium">
+											{v.actualSpeed.toFixed(0)} km/h
+										</span>
+										<span className="text-gray-500">
+											Limit: {v.speedLimit} km/h
+										</span>
+										<span className="text-red-600">
+											+{v.excess.toFixed(0)} km/h
+										</span>
+									</div>
+								</div>
+							))}
+						</div>
+						{/* Desktop table view */}
+						<div className="hidden sm:block overflow-x-auto">
 							<table className="min-w-full divide-y divide-gray-200">
 								<thead className="bg-gray-50">
 									<tr>
-										<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+										<th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
 											Date & Time
 										</th>
-										<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+										<th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
 											Speed
 										</th>
-										<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+										<th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
 											Limit
 										</th>
-										<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+										<th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
 											Excess
 										</th>
 									</tr>
@@ -372,16 +406,16 @@ export default function UserDashboard() {
 								<tbody className="bg-white divide-y divide-gray-200">
 									{violations.slice(0, 10).map((v) => (
 										<tr key={v.id}>
-											<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+											<td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
 												{new Date(v.timestamp).toLocaleString()}
 											</td>
-											<td className="px-6 py-4 whitespace-nowrap text-sm text-red-600 font-medium">
+											<td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-red-600 font-medium">
 												{v.actualSpeed.toFixed(1)} km/h
 											</td>
-											<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+											<td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
 												{v.speedLimit} km/h
 											</td>
-											<td className="px-6 py-4 whitespace-nowrap text-sm text-red-600">
+											<td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-red-600">
 												+{v.excess.toFixed(1)} km/h
 											</td>
 										</tr>
