@@ -169,6 +169,18 @@ export default function AdminDashboard() {
 					>
 						Violations ({allViolations.length})
 					</button>
+					<a
+						href="/admin/profiles"
+						className="px-4 py-2 rounded-md font-medium bg-purple-600 text-white hover:bg-purple-700"
+					>
+						🔍 User Profiles
+					</a>
+					<a
+						href="/admin/charts"
+						className="px-4 py-2 rounded-md font-medium bg-green-600 text-white hover:bg-green-700"
+					>
+						📊 Charts
+					</a>
 				</div>
 
 				{/* Trips View */}

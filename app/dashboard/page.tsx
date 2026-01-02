@@ -66,66 +66,63 @@ export default function UserDashboard() {
 	const [loading, setLoading] = useState(true);
 
 	useEffect(() => {
+		const loadUserData = async () => {
+			if (!session?.user?.id) return;
+
+			try {
+				const userId = session.user.id;
+
+				// Load user's data
+				const [tripsRes, violationsRes] = await Promise.all([
+					fetch(`/api/trips?userId=${userId}`),
+					fetch(`/api/violations?userId=${userId}`),
+				]);
+
+				const tripsData = await tripsRes.json();
+				const violationsData = await violationsRes.json();
+
+				const userTrips = tripsData.trips || [];
+				const userViolations = violationsData.violations || [];
+
+				setTrips(userTrips);
+				setViolations(userViolations);
+
+				// Calculate stats
+				const totalDistance = userTrips.reduce(
+					(sum: number, t: Trip) => sum + (t.totalDistance || 0),
+					0
+				);
+				const speeds = userTrips
+					.filter((t: Trip) => t.averageSpeed > 0)
+					.map((t: Trip) => t.averageSpeed);
+				const avgSpeed =
+					speeds.length > 0
+						? speeds.reduce((a: number, b: number) => a + b, 0) / speeds.length
+						: 0;
+				const maxSpeed = userTrips.reduce(
+					(max: number, t: Trip) => Math.max(max, t.maxSpeed || 0),
+					0
+				);
+
+				setStats({
+					totalTrips: userTrips.length,
+					totalDistance,
+					averageSpeed: avgSpeed,
+					maxSpeed,
+					totalViolations: userViolations.length,
+				});
+
+				setLoading(false);
+			} catch (error) {
+				console.error("Failed to load user data:", error);
+				setLoading(false);
+			}
+		};
+
 		if (session?.user?.id) {
 			loadUserData();
 		}
 	}, [session]);
-
-	const loadUserData = async () => {
-		if (!session?.user?.id) return;
-
-		try {
-			const userId = session.user.id;
-
-			// Load user's data
-			const [tripsRes, violationsRes, locationsRes] = await Promise.all([
-				fetch(`/api/trips?userId=${userId}`),
-				fetch(`/api/violations?userId=${userId}`),
-				fetch(`/api/locations?userId=${userId}`),
-			]);
-
-			const tripsData = await tripsRes.json();
-			const violationsData = await violationsRes.json();
-			const locationsData = await locationsRes.json();
-
-			const userTrips = tripsData.trips || [];
-			const userViolations = violationsData.violations || [];
-			const userLocations = locationsData.locations || [];
-
-			setTrips(userTrips);
-			setViolations(userViolations);
-
-			// Calculate stats
-			const totalDistance = userTrips.reduce(
-				(sum: number, t: Trip) => sum + (t.totalDistance || 0),
-				0
-			);
-			const speeds = userTrips
-				.filter((t: Trip) => t.averageSpeed > 0)
-				.map((t: Trip) => t.averageSpeed);
-			const avgSpeed =
-				speeds.length > 0
-					? speeds.reduce((a: number, b: number) => a + b, 0) / speeds.length
-					: 0;
-			const maxSpeed = userTrips.reduce(
-				(max: number, t: Trip) => Math.max(max, t.maxSpeed || 0),
-				0
-			);
-
-			setStats({
-				totalTrips: userTrips.length,
-				totalDistance,
-				averageSpeed: avgSpeed,
-				maxSpeed,
-				totalViolations: userViolations.length,
-			});
-
-			setLoading(false);
-		} catch (error) {
-			console.error("Failed to load user data:", error);
-			setLoading(false);
-		}
-	};
 
 	const loadTripLocations = async (tripId: string) => {
 		try {
