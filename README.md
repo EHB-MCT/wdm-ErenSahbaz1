@@ -170,6 +170,30 @@ The banner also considers:
 - [Google Maps React](https://www.npmjs.com/package/@react-google-maps/api) - Maps integration
 - [Recharts](https://recharts.org/) - Data visualization
 - [Tailwind CSS](https://tailwindcss.com/) - Styling
+- [bcryptjs](https://www.npmjs.com/package/bcryptjs) - Password hashing
+
+### Tutorials & Guides
+
+- [Next.js App Router Tutorial](https://nextjs.org/learn) - Official Next.js learning path
+- [NextAuth.js Credentials Provider](https://next-auth.js.org/providers/credentials) - Authentication setup
+- [Geolocation API (MDN)](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation_API) - Browser location tracking
+- [Google Maps JavaScript API](https://developers.google.com/maps/documentation/javascript) - Map integration
+- [Docker Compose Tutorial](https://docs.docker.com/compose/gettingstarted/) - Container orchestration
+
+### Algorithm References
+
+- [Haversine Formula](https://en.wikipedia.org/wiki/Haversine_formula) - Distance calculation between GPS coordinates
+- [Speed Calculation from GPS](https://stackoverflow.com/questions/639695/how-to-convert-latitude-or-longitude-to-meters) - Converting coordinates to distance
+
+### Concept & Inspiration
+
+- [GDPR and Location Data](https://gdpr.eu/article-9-processing-special-categories-of-personal-data-prohibited/) - Privacy implications of tracking
+
+### Stack Overflow & Community Help
+
+- [Next.js with Docker](https://github.com/vercel/next.js/tree/canary/examples/with-docker) - Official Docker example
+- [NextAuth JWT Session](https://next-auth.js.org/configuration/options#session) - Session configuration
+- [Tailwind Responsive Design](https://tailwindcss.com/docs/responsive-design) - Mobile-first CSS utilities
 
 ### AI Assistance
 
